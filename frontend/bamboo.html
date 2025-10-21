@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>BAMBOO CRAFT</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      background: linear-gradient(to bottom right, #f9fdfd, #e0f7f7);
+      color: #333;
+    }
+
+    h1 {
+      text-align: center;
+      padding: 30px 20px;
+      color: #2c7a7b;
+      font-size: 2.8em;
+      position: relative;
+      margin-top: 100px;
+      letter-spacing: 1px;
+      text-shadow: 1px 1px 3px rgba(44, 122, 123, 0.3);
+    }
+    h1::after {
+      content: '';
+      width: 80px;
+      height: 4px;
+      background: #2c7a7b;
+      position: absolute;
+      bottom: 15px;
+      left: 50%;
+      transform: translateX(-50%);
+      box-shadow: 0 2px 8px rgba(44, 122, 123, 0.4);
+      border-radius: 4px;
+    }
+
+    /* Navbar */
+    nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: #fff;
+      padding: 20px 40px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .nav-links a {
+      margin-left: 25px;
+      text-decoration: none;
+      color: #2c7a7b;
+      font-weight: 500;
+      transition: color 0.3s;
+    }
+    .nav-links a:hover {
+      color: #38b2ac;
+    }
+
+    /* Products Grid */
+    .products {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 30px;
+      padding: 40px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    /* Product Card */
+    .product-card {
+      background: #fff;
+      border-radius: 14px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+      overflow: hidden;
+      cursor: pointer;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      display: flex;
+      flex-direction: column;
+    }
+    .product-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 16px 32px rgba(0, 0, 0, 0.12);
+    }
+    .product-card img {
+      width: 100%;
+      height: 220px;
+      object-fit: cover;
+      border-bottom: 1px solid #eee;
+    }
+    .product-card h3 {
+      padding: 15px 16px 5px;
+      margin: 0;
+      font-size: 1.3em;
+      color: #2c7a7b;
+    }
+
+.star-rating {
+  display: flex;
+  gap: 0.18rem;
+  font-size: 1.1rem;
+  color: #ffd700;
+  margin-bottom: 0.35rem;
+}
+.star-rating i {
+  color: #ffd700;
+}
+
+.fav-heart {
+  font-size: 1.5em;
+  color: #bbb;
+  cursor: pointer;
+  transition: color 0.3s ease;
+  user-select: none;
+}
+
+.fav-heart.favourited {
+  color: #e63946;
+  text-shadow: 0 0 5px #e63946;
+}
+
+.rating-fav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 16px;
+  margin-top: 6px;
+  margin-bottom: 4px;
+}
+
+    .priceTag {
+      font-weight: bold;
+      color: #28a745;
+      padding: 0 16px;
+      font-size: 1.1em;
+    }
+    .product-description {
+      padding: 12px 16px 20px;
+      display: none;
+      font-size: 0.95em;
+      color: #444;
+      border-top: 1px solid #eee;
+      line-height: 1.5;
+      flex-grow: 1;
+    }
+    .product-description button {
+      margin-top: 12px;
+      background-color: #2c7a7b;
+      color: #fff;
+      padding: 10px 16px;
+      border: none;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 0.95em;
+      cursor: pointer;
+      transition: background-color 0.3s, transform 0.2s;
+    }
+    .product-description button:hover {
+      background-color: #3ca6a7;
+      transform: translateY(-2px);
+    }
+
+    /* Modal for Payment */
+    #paymentModal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background-color: rgba(0, 0, 0, 0.6);
+      z-index: 9999;
+    }
+    #paymentModal > div {
+      background: #fff;
+      padding: 20px;
+      max-width: 400px;
+      margin: 100px auto;
+      border-radius: 10px;
+    }
+    select {
+      width: 100%;
+      padding: 8px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+
+    @media(max-width: 600px) {
+      h1 {
+        font-size: 2.2em;
+      }
+    }
+  </style>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
+
+</head>
+<body>
+ <!-- Navbar -->
+<nav>
+    <div class="logo" style="font-size: 1.8em; font-weight: 700; color: #2c7a7b;">Artisans Bazaar</div>
+  </div>
+  <div style="display: flex; align-items: center;">
+    <div class="nav-links" style="display: flex;">
+      <a href="home.html" style="margin-left: 25px; text-decoration: none; color: #2c7a7b; font-weight: 500; transition: color 0.3s;">Home</a>
+      <a href="about.html" style="margin-left: 25px; text-decoration: none; color: #2c7a7b; font-weight: 500; transition: color 0.3s;">About</a>
+      <a href="contact.html" style="margin-left: 25px; text-decoration: none; color: #2c7a7b; font-weight: 500; transition: color 0.3s;">Contact</a>
+    </div>
+  </div>
+</nav>
+
+
+
+<h1>Bamboo Craft by Local Artisans</h1>
+
+<div class="products">
+
+<!-- 1. Bamboo Basket -->
+<div class="product-card" onclick="toggleDetails(this)">
+  <img src="public/basket.jpg" alt="Bamboo Basket">
+  <h3>Bamboo Basket</h3>
+  <div class="rating-fav">
+    <div class="star-rating">
+      <i class="fa-solid fa-star"></i>
+      <i class="fa-solid fa-star"></i>
+      <i class="fa-solid fa-star"></i>
+      <i class="fa-regular fa-star"></i>
+      <i class="fa-regular fa-star"></i>
+    </div>
+    <div class="fav-heart" role="button" aria-label="Add to favourites" tabindex="0" onclick="toggleFavourite(event, this)">&#9829;</div>
+  </div>
+  <div class="product-description">
+    <div class="priceTag">₹900</div>
+    <p>Handwoven bamboo basket by artisan Anjali from Madurai. Contact: anjali.bamboo@example.com</p>
+<button onclick="goToBuyPage(event, 'Bamboo Basket', '900', 'public/basket.jpg')">Buy</button>
+<a href="customise.html?product=Bamboo Basket&seller=anjali.bamboo@example.com"><button>Chat</button></a>
+
+  </div>
+</div>
+
+<!-- 2. Bamboo Lamp -->
+<div class="product-card" onclick="toggleDetails(this)">
+  <img src="public/basketlamp.jpg" alt="Bamboo Lamp">
+  <h3>Bamboo Lamp</h3>
+  <div class="rating-fav">
+    <div class="star-rating">
+      <i class="fa-solid fa-star"></i>
+      <i class="fa-solid fa-star"></i>
+      <i class="fa-solid fa-star"></i>
+      <i class="fa-solid fa-star"></i>
+      <i class="fa-regular fa-star"></i>
+    </div>
+    <div class="fav-heart" role="button" aria-label="Add to favourites" tabindex="0" onclick="toggleFavourite(event, this)">&#9829;</div>
+  </div>
+  <div class="product-description">
+    <div class="priceTag">₹1,500</div>
+    <p>Eco-friendly bamboo lamp handcrafted by Ravi from Kerala. Contact: ravi.artisan@example.com</p>
+<button onclick="goToBuyPage(event, 'Bamboo Lamp', '1500', 'public/basketlamp.jpg')">Buy</button>
+<a href="customise.html?product=Bamboo Lamp&seller=ravi.artisan@example.com"><button>Chat</button></a>
+  </div>
+</div>
+
+<!-- 3. Bamboo Coasters -->
+<div class="product-card" onclick="toggleDetails(this)">
+  <img src="public/coaster.jpg" alt="Bamboo Coasters">
+  <h3>Bamboo Coasters</h3>
+  <div class="rating-fav">
+    <div class="star-rating">
+      <i class="fa-solid fa-star"></i>
+      <i class="fa-solid fa-star"></i>
+      <i class="fa-solid fa-star-half-stroke"></i>
+      <i class="fa-regular fa-star"></i>
+      <i class="fa-regular fa-star"></i>
+    </div>
+    <div class="fav-heart" role="button" aria-label="Add to favourites" tabindex="0" onclick="toggleFavourite(event, this)">&#9829;</div>
+  </div>
+  <div class="product-description">
+    <div class="priceTag">₹450</div>
+    <p>Set of eco-friendly bamboo coasters crafted by Sita from Odisha. Contact: sita.bamboo@example.com</p>
+    <button onclick="startPayment(event, 'Bamboo Coasters')">Buy</button>
+    <a href="customise.html?product=Bamboo Coasters&seller=sita.bamboo@example.com"><button>Chat</button></a>
+  </div>
+</div>
+
+<!-- 4. Bamboo Cutlery Set -->
+<div class="product-card" onclick="toggleDetails(this)">
+  <img src="public/cuttlery.jpeg" alt="Bamboo Cutlery Set">
+  <h3>Bamboo Cutlery Set</h3>
+  <div class="rating-fav">
+    <div class="star-rating">
+      <i class="fa-solid fa-star"></i>
+      <i class="fa-solid fa-star"></i>
+      <i class="fa-solid fa-star"></i>
+      <i class="fa-solid fa-star-half-stroke"></i>
+      <i class="fa-regular fa-star"></i>
+    </div>
+    <div class="fav-heart" role="button" aria-label="Add to favourites" tabindex="0" onclick="toggleFavourite(event, this)">&#9829;</div>
+  </div>
+  <div class="product-description">
+    <div class="priceTag">₹800</div>
+    <p>Sustainable bamboo cutlery set made by Kiran from Assam. Contact: kiran.bamboo@example.com</p>
+    <button onclick="startPayment(event, 'Bamboo Cutlery Set')">Buy</button>
+    <a href="customise.html?product=Bamboo Cutlery Set&seller=kiran.bamboo@example.com"><button>Chat</button></a>
+  </div>
+</div>
+
+<!-- 5. Bamboo Wall Art -->
+<div class="product-card" onclick="toggleDetails(this)">
+  <img src="public/wallart.jpg" alt="Bamboo Wall Art">
+  <h3>Bamboo Wall Art</h3>
+  <div class="rating-fav">
+    <div class="star-rating">
+      <i class="fa-solid fa-star"></i>
+      <i class="fa-solid fa-star"></i>
+      <i class="fa-solid fa-star"></i>
+      <i class="fa-solid fa-star"></i>
+      <i class="fa-regular fa-star"></i>
+    </div>
+    <div class="fav-heart" role="button" aria-label="Add to favourites" tabindex="0" onclick="toggleFavourite(event, this)">&#9829;</div>
+  </div>
+  <div class="product-description">
+    <div class="priceTag">₹2,200</div>
+    <p>Decorative bamboo wall hanging by Rina from West Bengal. Contact: rina.artworks@example.com</p>
+    <button onclick="startPayment(event, 'Bamboo Wall Art')">Buy</button>
+    <a href="customise.html?product=Bamboo Wall Art&seller=rina.artworks@example.com"><button>Chat</button></a>
+  </div>
+</div>
+
+<!-- 6. Bamboo Planter -->
+<div class="product-card" onclick="toggleDetails(this)">
+  <img src="public/planter.jpg" alt="Bamboo Planter">
+  <h3>Bamboo Planter</h3>
+  <div class="rating-fav">
+    <div class="star-rating">
+      <i class="fa-solid fa-star"></i>
+      <i class="fa-solid fa-star"></i>
+      <i class="fa-solid fa-star-half-stroke"></i>
+      <i class="fa-regular fa-star"></i>
+      <i class="fa-regular fa-star"></i>
+    </div>
+    <div class="fav-heart" role="button" aria-label="Add to favourites" tabindex="0" onclick="toggleFavourite(event, this)">&#9829;</div>
+  </div>
+  <div class="product-description">
+    <div class="priceTag">₹650</div>
+    <p>Handcrafted bamboo planter for indoor plants by Manoj from Tamil Nadu. Contact: manoj.bamboo@example.com</p>
+    <button onclick="startPayment(event, 'Bamboo Planter')">Buy</button>
+    <a href="customise.html?product=Bamboo Planter&seller=manoj.bamboo@example.com"><button>Chat</button></a>
+  </div>
+</div>
+
+<!-- 7. Bamboo Hand Fan -->
+<div class="product-card" onclick="toggleDetails(this)">
+  <img src="public/fan.jpg" alt="Bamboo Hand Fan">
+  <h3>Bamboo Hand Fan</h3>
+  <div class="rating-fav">
+    <div class="star-rating">
+      <i class="fa-solid fa-star"></i>
+      <i class="fa-solid fa-star"></i>
+      <i class="fa-regular fa-star"></i>
+      <i class="fa-regular fa-star"></i>
+      <i class="fa-regular fa-star"></i>
+    </div>
+    <div class="fav-heart" role="button" aria-label="Add to favourites" tabindex="0" onclick="toggleFavourite(event, this)">&#9829;</div>
+  </div>
+  <div class="product-description">
+    <div class="priceTag">₹300</div>
+    <p>Traditional bamboo hand fan made by Priya from Gujarat. Contact: priya.bamboo@example.com</p>
+    <button onclick="startPayment(event, 'Bamboo Hand Fan')">Buy</button>
+    <a href="customise.html?product=Bamboo Hand Fan&seller=priya.bamboo@example.com"><button>Chat</button></a>
+  </div>
+</div>
+
+ <!-- Toggle Details Script -->
+<script>
+  function toggleDetails(card) {
+    const desc = card.querySelector('.product-description');
+    desc.style.display = desc.style.display === 'block' ? 'none' : 'block';
+  }
+  
+  function startPayment(event, productName) {
+    event.stopPropagation(); // Prevent toggling details
+    document.getElementById('modalTitle').innerText = `Buy ${productName}`;
+    document.getElementById('paymentMethod').value = 'UPI';
+    document.getElementById('paymentModal').style.display = 'block';
+  }
+
+  function confirmPayment() {
+    const method = document.getElementById('paymentMethod').value;
+    alert('Payment confirmed via ' + method + '! Thank you for your purchase.');
+    document.getElementById('paymentModal').style.display = 'none';
+  }
+
+  function cancelPayment() {
+    document.getElementById('paymentModal').style.display = 'none';
+  }
+
+function toggleFavourite(event, heartElement) {
+  event.stopPropagation(); // Prevent card toggle
+  heartElement.classList.toggle('favourited');
+}
+
+
+</script>
+
+<script>
+  function goToBuyPage(event, name, price, image) {
+    event.stopPropagation();
+    const params = new URLSearchParams({
+      name: name,
+      price: price,
+      image: image
+    }).toString();
+    window.location.href = `buy.html?${params}`;
+  }
+</script>
+
+<!-- Payment Modal -->
+<div id="paymentModal">
+  <div>
+    <h2 id="modalTitle">Confirm Purchase</h2>
+    <p>Select Payment Method:</p>
+    <select id="paymentMethod">
+      <option value="UPI">UPI</option>
+      <option value="CreditCard">Credit Card</option>
+      <option value="CashOnDelivery">Cash on Delivery</option>
+    </select>
+    <br/><br/>
+    <button onclick="confirmPayment()">Confirm</button>
+    <button onclick="cancelPayment()">Cancel</button>
+  </div>
+</div>
+
+</body>
+</html>

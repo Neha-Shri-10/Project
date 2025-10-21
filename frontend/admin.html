@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Panel</title>
+  <style>
+    body { font-family: Arial; background: #f9f9f9; padding: 20px; }
+    h1 { text-align: center; }
+    nav { text-align: center; margin-bottom: 20px; }
+    nav button { margin: 5px; padding: 10px; border: none; border-radius: 4px; cursor: pointer; background: #007bff; color: white; }
+    nav button:hover { background: #0056b3; }
+    .card { background: #fff; padding: 15px; border-radius: 8px; margin: 15px auto; max-width: 600px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+    img { max-width: 120px; margin-top: 10px; }
+    .approve { background: #28a745; }
+    .reject { background: #dc3545; margin-left: 10px; }
+  </style>
+</head>
+<body>
+  <h1>Admin Dashboard</h1>
+  <nav>
+    <button onclick="loadPending()">Pending Products</button>
+    <button onclick="loadAllProducts()">All Products</button>
+    <button onclick="loadSales()">Sales</button>
+    <button onclick="logout()">Logout</button>
+  </nav>
+
+  <div id="content"></div>
+
+  <script>
+    if (localStorage.getItem("isAdmin") !== "true") {
+      window.location.href = "admin-login.html";
+    }
+
+    async function loadPending() {
+      const res = await fetch("http://localhost:3000/admin/products/pending");
+      const products = await res.json();
+      renderProducts(products, true);
+    }
+
+    async function loadAllProducts() {
+      const res = await fetch("http://localhost:3000/admin/products/all");
+      const products = await res.json();
+      renderProducts(products, false);
+    }
+
+    async function loadSales() {
+      const res = await fetch("http://localhost:3000/admin/sales");
+      const sales = await res.json();
+      const container = document.getElementById("content");
+      container.innerHTML = "<h2>Sales Records</h2>";
+      sales.forEach(s => {
+        const div = document.createElement("div");
+        div.className = "card";
+        div.innerHTML = `
+          <p><b>Product:</b> ${s.productName}</p>
+          <p><b>Buyer:</b> ${s.buyerName} (${s.buyerEmail})</p>
+          <p><b>Quantity:</b> ${s.quantity}</p>
+          <p><b>Total Price:</b> $${s.totalPrice}</p>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+   function renderProducts(products, isPending) {
+  const container = document.getElementById("content");
+  container.innerHTML = "";
+  if (products.length === 0) {
+    container.innerHTML = "<p>No products found.</p>";
+    return;
+  }
+  products.forEach(p => {
+    const div = document.createElement("div");
+    div.className = "card";
+    div.innerHTML = `
+      <h3>${p.productName} (${p.productCategory})</h3>
+      <p>${p.productDescription}</p>
+      <p>Price: $${p.productPrice} | Qty: ${p.productQuantity}</p>
+      <img src="${p.productImage}" alt="Product image" />
+      ${isPending 
+        ? `
+          <button class="approve" onclick="approveProduct(${p.id})">Approve</button>
+          <button class="reject" onclick="rejectProduct(${p.id})">Reject</button>
+        ` 
+        : `
+          <button class="reject" onclick="removeApprovedProduct(${p.id})">Remove</button>
+        `
+      }
+    `;
+    container.appendChild(div);
+  });
+}
+
+    async function approveProduct(id) {
+      const res = await fetch("http://localhost:3000/admin/approve/" + id, { method: "POST" });
+      const result = await res.json();
+      alert(result.message);
+      loadPending();
+    }
+
+    async function rejectProduct(id) {
+      const res = await fetch("http://localhost:3000/admin/reject/" + id, { method: "DELETE" });
+      const result = await res.json();
+      alert(result.message);
+      loadPending();
+    }
+async function removeApprovedProduct(id) {
+  if (!confirm("Are you sure you want to remove this product?")) return;
+
+  try {
+    const res = await fetch(`http://localhost:3000/admin/remove/${id}`, { method: "DELETE" });
+    const result = await res.json();
+    alert(result.message);
+    loadAllProducts(); // refresh list
+  } catch (err) {
+    console.error(err);
+    alert("Failed to remove product.");
+  }
+}
+
+    function logout() {
+      localStorage.removeItem("isAdmin");
+      window.location.href = "admin-login.html";
+    }
+  </script>
+  <h2>Update Admin Credentials</h2>
+<form id="updateForm">
+  <label>Old Username:</label>
+  <input type="text" name="oldUsername" required><br>
+
+  <label>Old Password:</label>
+  <input type="password" name="oldPassword" required><br>
+
+  <label>New Username:</label>
+  <input type="text" name="newUsername" required><br>
+
+  <label>New Password:</label>
+  <input type="password" name="newPassword" required><br>
+
+  <button type="submit">Update</button>
+</form>
+
+<script>
+document.getElementById("updateForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const formData = Object.fromEntries(new FormData(e.target));
+
+  const res = await fetch("/admin/update", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(formData)
+  });
+
+  const result = await res.json();
+  alert(result.message);
+});
+</script>
+
+</body>
+</html>

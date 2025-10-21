@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Checkout - Artisans Bazaar</title>
+  <style>
+    body { font-family: 'Segoe UI', sans-serif; background-color: #f9f9f9; margin:0; padding:0; color:#333; }
+    .container { max-width:800px; margin:40px auto; padding:20px; background:#fff; border-radius:10px; box-shadow:0 4px 12px rgba(0,0,0,0.1); }
+    h2 { color:#2c7a7b; margin-bottom:20px; }
+    .summary, .form-section { margin-bottom:30px; }
+    label { display:block; margin-bottom:6px; font-weight:600; }
+    input[type="text"], textarea { width:100%; padding:10px; border:1px solid #ccc; border-radius:6px; margin-bottom:15px; }
+    .confirm-btn { padding:12px 24px; font-weight:600; color:white; background-color:#38a169; border:none; border-radius:6px; cursor:pointer; transition:0.3s; }
+    .confirm-btn:hover { background-color:#2f855a; }
+    .cancel-btn { padding:12px 24px; font-weight:600; color:white; background-color:#e53e3e; border:none; border-radius:6px; cursor:pointer; margin-left:10px; transition:0.3s; }
+    .cancel-btn:hover { background-color:#c53030; }
+    .product-info { background:#edf2f7; padding:15px; border-radius:6px; }
+    .product-info p { margin:5px 0; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Checkout</h2>
+
+    <div class="summary product-info">
+      <p><strong>Product:</strong> <span id="checkout-product"></span></p>
+      <p><strong>Quantity:</strong> <span id="checkout-qty"></span></p>
+      <p><strong>Price:</strong> ₹<span id="checkout-price"></span></p>
+      <p><strong>Total:</strong> ₹<span id="checkout-total"></span></p>
+    </div>
+
+    <div class="form-section">
+      <label for="address">Shipping Address:</label>
+      <textarea id="address" rows="4" placeholder="Enter your full shipping address"></textarea>
+
+      <label for="pincode">Enter Pincode to check delivery:</label>
+      <input type="text" id="pincode" placeholder="e.g. 110011" maxlength="6"/>
+      <span id="pincode-message" style="color:#e53e3e; font-weight:500; margin-left:10px;"></span>
+
+      <p><strong>Delivery by:</strong> <span id="delivery-estimate">Checking...</span></p>
+    </div>
+
+    <button class="confirm-btn" onclick="confirmOrder()">Confirm Order</button>
+    <button class="cancel-btn" onclick="cancelOrder()">Cancel Order</button>
+  </div>
+
+<script>
+const product = localStorage.getItem("orderProduct") || "Product";
+const price = parseFloat(localStorage.getItem("orderPrice")) || 0;
+const qty = parseInt(localStorage.getItem("orderQty")) || 1;
+const productId = parseInt(localStorage.getItem("orderProductId")) || 0;
+
+document.getElementById("checkout-product").innerText = product;
+document.getElementById("checkout-qty").innerText = qty;
+document.getElementById("checkout-price").innerText = price.toFixed(2);
+document.getElementById("checkout-total").innerText = (price*qty).toFixed(2);
+
+const deliveryEl = document.getElementById("delivery-estimate");
+const today = new Date();
+const deliveryDate = new Date(today);
+deliveryDate.setDate(today.getDate() + 3);
+deliveryEl.innerText = deliveryDate.toDateString();
+
+function isValidPincode(pincode) {
+  return /^[0-9]{6}$/.test(pincode) && Number(pincode) >= 100000 && Number(pincode) <= 999999;
+}
+
+const pincodeInput = document.getElementById("pincode");
+const messageEl = document.getElementById("pincode-message");
+pincodeInput.addEventListener("input", function() {
+  const pincode = this.value.trim();
+  if (!pincode) { messageEl.textContent = ''; return; }
+  messageEl.textContent = isValidPincode(pincode) ? '' : "Invalid pincode – must be 6 digits between 100000 and 999999.";
+});
+
+async function confirmOrder() {
+  const address = document.getElementById("address").value.trim();
+  const pincode = pincodeInput.value.trim();
+
+  if(address.length < 10) { alert("Enter valid address"); return; }
+  if(!isValidPincode(pincode)) { alert("Enter valid pincode"); return; }
+
+  const user = JSON.parse(localStorage.getItem('user'));
+  if(!user) { alert("Login required"); window.location.href="login.html"; return; }
+
+  const orderData = {
+    userId: user.id,
+    productId,
+    quantity: qty,
+    totalPrice: price*qty
+  };
+
+  try {
+    const res = await fetch('http://localhost:3000/orders', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(orderData)
+    });
+
+    // parse response safely
+    const text = await res.text(); 
+    let data;
+    try {
+      data = JSON.parse(text); 
+    } catch(e) {
+      console.error('Response is not JSON:', text);
+      alert('Server returned invalid response.');
+      return;
+    }
+
+    if(data.success){
+      localStorage.removeItem("orderProduct");
+      localStorage.removeItem("orderQty");
+      localStorage.removeItem("orderPrice");
+      localStorage.removeItem("orderProductId");
+      window.location.href = "thankyou.html";
+    } else {
+      alert("Order failed: "+data.message);
+    }
+  } catch(err){
+    console.error(err);
+    alert("Error placing order");
+  }
+}
+
+function cancelOrder() {
+  if(confirm("Cancel order?")){
+    localStorage.removeItem("orderProduct");
+    localStorage.removeItem("orderQty");
+    localStorage.removeItem("orderPrice");
+    localStorage.removeItem("orderProductId");
+    window.location.href="home.html";
+  }
+}
+
+window.confirmOrder = confirmOrder;
+window.cancelOrder = cancelOrder;
+</script>
+</body>
+</html>

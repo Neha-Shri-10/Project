@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Change Password</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f0f4f8;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .container {
+      background-color: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 400px;
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 25px;
+      color: #2c7a7b;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 15px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 1em;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      background-color: #2c7a7b;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 1em;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #38b2ac;
+    }
+
+    .message {
+      margin-top: 10px;
+      text-align: center;
+      font-size: 0.95em;
+    }
+
+    .error {
+      color: red;
+    }
+
+    .success {
+      color: green;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Change Password</h2>
+    <input type="password" id="currentPassword" placeholder="Current Password" required />
+    <input type="password" id="newPassword" placeholder="New Password" required />
+    <input type="password" id="confirmPassword" placeholder="Confirm New Password" required />
+    <button onclick="updatePassword()">Update Password</button>
+    <p id="message" class="message"></p>
+  </div>
+
+  
+</body>
+</html>
+<script>
+  function updatePassword() {
+    const currentPassword = document.getElementById('currentPassword').value;
+    const newPassword = document.getElementById('newPassword').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+    const message = document.getElementById('message');
+
+    const user = JSON.parse(localStorage.getItem('user'));
+
+    if (!user) {
+      message.textContent = 'No user logged in.';
+      message.className = 'message error';
+      return;
+    }
+
+    // Check if current password is correct
+    if (currentPassword !== user.password) {
+      message.textContent = 'Current password is incorrect.';
+      message.className = 'message error';
+      return;
+    }
+
+    // Check if new password matches confirm password
+    if (newPassword !== confirmPassword) {
+      message.textContent = 'New password and confirmation do not match.';
+      message.className = 'message error';
+      return;
+    }
+
+    // Check if new password is same as current
+    if (newPassword === currentPassword) {
+      message.textContent = 'New password cannot be the same as the current password.';
+      message.className = 'message error';
+      return;
+    }
+
+    // Password strength validation
+    const passwordRegex = /^(?=.*[a-z|-])(?=.*[A-Z])(?=.*[\W_]).{8,}$/;
+    if (!passwordRegex.test(newPassword)) {
+      message.textContent = 'Password must be at least 8 characters and include uppercase, lowercase, and a special character.';
+      message.className = 'message error';
+      return;
+    }
+
+    // Update password
+    user.password = newPassword;
+    localStorage.setItem('user', JSON.stringify(user));
+    message.textContent = 'Password changed successfully.';
+    message.className = 'message success';
+
+    // Redirect back to home after 2 seconds
+    setTimeout(() => {
+      window.location.href = 'home.html';
+    }, 2000);
+  }
+</script>
